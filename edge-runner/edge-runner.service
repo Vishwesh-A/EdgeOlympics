@@ -1,0 +1,25 @@
+[Unit]
+Description=Edge Olympics Raspberry Pi Edge Runner
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=edgerunner
+Group=edgerunner
+WorkingDirectory=/opt/edge-runner
+EnvironmentFile=/opt/edge-runner/.env
+ExecStart=/opt/edge-runner/venv/bin/python /opt/edge-runner/main.py --runner
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+KillSignal=SIGTERM
+
+# Sandboxing & limits
+ProtectSystem=full
+ProtectHome=true
+NoNewPrivileges=true
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
