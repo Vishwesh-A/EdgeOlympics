@@ -30,3 +30,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment & Worker
+.env
+.env.*
+!.env.example
+edge-runner/.env*
+!edge-runner/.env.example
+edge-runner/.spool/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+#submissions
+*.tflite
+*.npz

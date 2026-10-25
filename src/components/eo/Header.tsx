@@ -31,7 +31,7 @@ export function Header() {
           <span className="text-lg">Edge Olympics</span>
         </Link>
         <nav className="flex items-center gap-1">
-          <Link to="/" className={linkCls} activeProps={active} activeOptions={{ exact: true }}>
+          <Link to="/leaderboard" className={linkCls} activeProps={active}>
             Leaderboard
           </Link>
           {user && (
