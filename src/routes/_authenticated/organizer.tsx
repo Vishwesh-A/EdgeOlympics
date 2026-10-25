@@ -93,11 +93,11 @@ function Dashboard() {
   const delFile = async (r: Row) => {
     if (!r.file_path || !confirm("Delete this model file permanently?")) return;
     const { error } = await supabase.storage.from("models").remove([r.file_path]);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     await act(r.id, "file_deleted");
   };
   const updateSettings = async (patch: Record<string, unknown>) => {
-    const { error } = await supabase.from("settings").update(patch).eq("id", 1);
+    const { error } = await supabase.from("settings").update(patch as never).eq("id", 1);
     if (error) toast.error(error.message);
     else settings.refetch();
   };
@@ -222,7 +222,7 @@ function Dashboard() {
   );
 }
 
-function Toggle({ label, hint, checked, onChange }: { label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ label, hint, checked, onChange }: { label: string; hint?: string | undefined; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="flex items-center justify-between gap-4 rounded-xl bg-muted/60 p-4">
       <span>

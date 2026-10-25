@@ -48,7 +48,7 @@ export function compareRank(a: Metrics, b: Metrics) {
 export function pickBest<T extends Metrics & { status: string }>(subs: T[]): T | null {
   const done = subs.filter((s) => s.status === "completed" && s.accuracy != null);
   if (!done.length) return null;
-  return [...done].sort(compareRank)[0];
+  return [...done].sort(compareRank)[0] ?? null;
 }
 
 export function usedSlots(subs: { status: string }[]) {

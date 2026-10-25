@@ -54,7 +54,7 @@ function TeamSetup() {
         ? await supabase.rpc("create_team", { _name: name })
         : await supabase.rpc("join_team", { _code: code });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     toast.success(fn === "create_team" ? "Team created!" : "You joined the team!");
     qc.invalidateQueries({ queryKey: ["my-team"] });
   };
@@ -153,8 +153,8 @@ function Uploader({ teamId, used, closed, deadline }: { teamId: string; used: nu
   const pick = (f: File | undefined) => {
     if (!f) return;
     const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
-    if (!ALLOWED.includes(ext)) return toast.error("Only .tflite or .onnx files are allowed.");
-    if (f.size > MAX_BYTES) return toast.error("File is larger than 50 MB.");
+    if (!ALLOWED.includes(ext)) return void toast.error("Only .tflite or .onnx files are allowed.");
+    if (f.size > MAX_BYTES) return void toast.error("File is larger than 50 MB.");
     setFile(f);
   };
 
@@ -164,7 +164,7 @@ function Uploader({ teamId, used, closed, deadline }: { teamId: string; used: nu
     const path = `${teamId}/${crypto.randomUUID()}.${ext}`;
     setProgress(30);
     const up = await supabase.storage.from("models").upload(path, file, { contentType: "application/octet-stream" });
-    if (up.error) { setProgress(null); return toast.error(up.error.message); }
+    if (up.error) { setProgress(null); return void toast.error(up.error.message); }
     setProgress(80);
     const { error } = await supabase.from("submissions").insert({
       team_id: teamId,
@@ -175,7 +175,7 @@ function Uploader({ teamId, used, closed, deadline }: { teamId: string; used: nu
     if (error) {
       await supabase.storage.from("models").remove([path]);
       setProgress(null);
-      return toast.error(error.message);
+      return void toast.error(error.message);
     }
     setProgress(100);
     toast.success("Model submitted!", { description: "It's now being checked." });

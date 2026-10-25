@@ -48,7 +48,7 @@ function Badge({ icon, label }: { icon: React.ReactNode; label: string }) {
   );
 }
 
-export function Podium({ rows, myTeamId }: { rows: LbRow[]; myTeamId?: string }) {
+export function Podium({ rows, myTeamId }: { rows: LbRow[]; myTeamId?: string | undefined }) {
   const top = rows.slice(0, 3);
   if (!top.length) return null;
   const order = [1, 0, 2].filter((i) => top[i]);
@@ -56,8 +56,8 @@ export function Podium({ rows, myTeamId }: { rows: LbRow[]; myTeamId?: string })
   return (
     <div className="grid grid-cols-3 items-end gap-3 md:gap-6">
       {order.map((i) => {
-        const r = top[i];
-        const m = MEDAL[i];
+        const r = top[i]!;
+        const m = MEDAL[i]!;
         return (
           <motion.div
             layout
@@ -96,7 +96,7 @@ export function Podium({ rows, myTeamId }: { rows: LbRow[]; myTeamId?: string })
   );
 }
 
-export function LeaderboardTable({ rows, myTeamId }: { rows: LbRow[]; myTeamId?: string }) {
+export function LeaderboardTable({ rows, myTeamId }: { rows: LbRow[]; myTeamId?: string | undefined }) {
   const reduced = usePrefersReducedMotion();
   const badges = useBadges(rows);
   const prev = useRef<Map<string, string>>(new Map());
@@ -115,6 +115,7 @@ export function LeaderboardTable({ rows, myTeamId }: { rows: LbRow[]; myTeamId?:
       const t = setTimeout(() => setFlash(new Set()), 1700);
       return () => clearTimeout(t);
     }
+    return undefined;
   }, [rows]);
 
   return (
