@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Helvetica Neue", Helvetica, Inter, Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -74,7 +74,10 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html { color-scheme: dark; }
+  html {
+    color-scheme: dark;
+    font-family: var(--font-sans);
+  }
   body {
     background-color: var(--color-background);
     background-image:
@@ -84,6 +87,9 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, h5, h6, button, input, label, p, a {
+    font-family: var(--font-sans);
   }
 }
 
@@ -120,3 +126,17 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ── Landing page additions ────────────────────────────────────────────────── */
+@utility glass-dark {
+  background: oklch(0.10 0.02 270 / 72%);
+  backdrop-filter: blur(20px) saturate(120%);
+  border: 1px solid oklch(1 0 0 / 10%);
+  box-shadow: 0 30px 70px -20px oklch(0 0 0 / 80%);
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(48px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@utility animate-fade-up { animation: fade-up 0.9s cubic-bezier(0.16,1,0.3,1) both; }
