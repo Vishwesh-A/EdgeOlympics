@@ -45,3 +45,9 @@ __pycache__/
 #submissions
 *.tflite
 *.npz
+
+.venv/
+venv/
+edge-runner/dataset/
+*.tflite
+*.npz
