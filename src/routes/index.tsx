@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Medal, ChevronDown, Loader2, Eye, EyeOff, LogOut } from "lucide-react";
 
-const Silk = lazy(() => import("@/components/eo/Silk"));
+const FaultyTerminal = lazy(() => import("@/components/eo/FaultyTerminal"));
 
 export const Route = createFileRoute("/")(
   {
@@ -374,13 +374,13 @@ function StepCard({
       initial={reduced ? false : { opacity: 0, y: 40 }}
       animate={visible ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.7, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
-      className="glass group relative flex flex-col gap-4 overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:border-white/20 hover:shadow-[0_0_50px_rgba(82,39,255,0.12)]"
+      className="glass group relative flex flex-col gap-4 overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:border-white/20 -hover:shadow-[0_0_50px_rgba(45,226,166,0.14)]"
     >
       <div
         className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         style={{
           background:
-            "radial-gradient(circle at 50% -20%, rgba(82,39,255,0.1), transparent 65%)",
+            "radial-gradient(circle at 50% -20%, rgba(45,226,166,0.1), transparent 65%)",
         }}
         aria-hidden="true"
       />
@@ -898,31 +898,41 @@ function LandingPage() {
 
   return (
     <>
-      {/* Fixed full-page Silk canvas — z-0, behind everything */}
-      <div className="fixed inset-0 z-0" aria-hidden="true">
+      {/* Fixed full-page terminal background — z-0, behind everything */}
+      <div className="fixed inset-0 z-0 bg-[#020806]" aria-hidden="true">
         {reduced ? (
-          <div className="h-full w-full bg-gradient-to-br from-[#0a0518] via-[#0d0a28] to-[#050210]" />
+          <div className="h-full w-full bg-gradient-to-br from-[#020a08] via-[#03110d] to-[#010605]" />
         ) : (
           <Suspense
             fallback={
-              <div className="h-full w-full bg-gradient-to-br from-[#0a0518] via-[#0d0a28] to-[#050210]" />
+              <div className="h-full w-full bg-gradient-to-br from-[#020a08] via-[#03110d] to-[#010605]" />
             }
           >
-            <Silk
-              color="#5227FF"
-              sheenColor="#ffffff"
-              speed={4}
-              scale={1}
-              rotation={0}
-              sheen={0.65}
-              depth={0.6}
-              glow={0.35}
-              noiseIntensity={1.5}
+            <FaultyTerminal
+              glyphs="characters"
+              tint="#2de2a6"
+              gridMul={[2, 1]}
+              digitSize={1.4}
+              timeScale={0.25}
+              scanlineIntensity={0.35}
+              flickerAmount={0.4}
+              curvature={0.28}
+              brightness={0.9}
+              glow={0.6}
+              persistence={0.5}
+              scramble={0.5}
+              mouseReact
+              mouseStrength={0.4}
+              mouseGlow={0.6}
+              pageLoadAnimation
+              clickEffect="glitch"
+              vignette={0.3}
+              dpr={1}
             />
           </Suspense>
         )}
-        {/* Subtle dark gradient overlay to ensure readability while preserving the vibrant silk waves */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/50" />
+        {/* Dark overlay keeps text readable over the binary layer */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/35 to-black/60" />
       </div>
 
       {/* Scrollable content — z-10, sits above fixed canvas */}
