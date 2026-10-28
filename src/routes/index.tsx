@@ -194,8 +194,9 @@ function HeroSection({ reduced }: { reduced: boolean }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 1.2 }}
         >
-          Anyone can train a massive model on a cloud GPU.{" "}
+          {" "}
           <span className="text-white/80 font-medium">
+          Anyone can train a massive model on a cloud GPU.
             Can you make it run on 2GB of RAM?
           </span>
         </motion.p>
