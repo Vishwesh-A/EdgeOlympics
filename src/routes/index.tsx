@@ -280,7 +280,9 @@ function SuspenseBeat({
       >
         {headline}
       </h2>
-      <p className="max-w-lg text-base text-white/50 leading-relaxed">{body}</p>
+      <p className="max-w-lg rounded-xl border border-white/15 bg-black/70 px-4 py-3 text-base leading-relaxed text-white/90 shadow-lg backdrop-blur-md">
+        {body}
+      </p>
       {aside && (
         <p className="font-mono text-[clamp(2rem,6vw,4rem)] font-black text-white/8 uppercase tracking-tighter">
           {aside}
@@ -897,7 +899,7 @@ function LandingPage() {
   };
 
   return (
-    <>
+    <div className="landing-page">
       {/* Fixed full-page terminal background — z-0, behind everything */}
       <div className="fixed inset-0 z-0 bg-[#020806]" aria-hidden="true">
         {reduced ? (
@@ -966,6 +968,6 @@ function LandingPage() {
           </div>
         </footer>
       </div>
-    </>
+    </div>
   );
 }

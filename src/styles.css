@@ -128,6 +128,11 @@
 }
 
 /* ── Landing page additions ────────────────────────────────────────────────── */
+.landing-page,
+.landing-page :where(*) {
+  font-family: "Helvetica Neue", Helvetica, Inter, Arial, sans-serif !important;
+}
+
 @utility glass-dark {
   background: oklch(0.10 0.02 270 / 72%);
   backdrop-filter: blur(20px) saturate(120%);
