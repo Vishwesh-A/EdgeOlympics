@@ -236,7 +236,14 @@ def run_edge_runner_loop(db: SupabaseWorkerClient, mock: bool = False, run_once:
             if stale_count > 0:
                 logger.info(f"Requeued/failed {stale_count} stale jobs.")
 
-            # 3. Claim job
+            # 3. Cool before claiming, so overheating never occupies a job lease.
+            _, _, cooled = thermal_mgr.wait_for_cooldown(max_wait_seconds=60)
+            if not cooled:
+                logger.warning("Pi remains hot or throttled; waiting before claiming another job.")
+                time.sleep(POLL_INTERVAL_S)
+                continue
+
+            # 4. Claim job
             job = db.claim_job(PI_ID)
             if job:
                 backoff = 1.0

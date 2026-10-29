@@ -17,6 +17,10 @@ if [[ "$(uname -m)" != "aarch64" ]]; then
   echo "A 64-bit Raspberry Pi OS image (aarch64) is required." >&2
   exit 1
 fi
+if ! command -v vcgencmd >/dev/null 2>&1; then
+  echo "vcgencmd is missing; install Raspberry Pi firmware tools before setup." >&2
+  exit 1
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 read -r -p "Control API URL [https://158.181.52.18:44298]: " API_URL

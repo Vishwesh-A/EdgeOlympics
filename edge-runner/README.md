@@ -52,7 +52,8 @@ Do not put the Supabase service-role key on a Pi or in this repository.
 ## Raspberry Pi OS (64-bit) setup, repeated for pi-01 through pi-04
 
 Confirm `uname -m` reports `aarch64` and give each Pi reliable power, internet,
-and a unique `PI_ID`. Copy `edge-runner/` to `/opt/edge-runner`; create a Python
+and a unique `PI_ID`. Confirm `vcgencmd measure_temp` works; the worker refuses
+real benchmarks when thermal telemetry is unavailable. Copy `edge-runner/` to `/opt/edge-runner`; create a Python
 venv and install `requirements-pi.txt`. Copy Vast's `tls/cert.pem` to a readable
 path on the Pi. Put only the following into `/opt/edge-runner/.env` (mode 600):
 
