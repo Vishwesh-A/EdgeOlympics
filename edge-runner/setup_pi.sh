@@ -41,6 +41,13 @@ apt-get install -y python3-venv
 if ! id edgerunner >/dev/null 2>&1; then
   useradd -r -s /usr/sbin/nologin edgerunner
 fi
+if getent group video >/dev/null; then
+  usermod -aG video edgerunner
+fi
+if ! runuser -u edgerunner -- vcgencmd measure_temp >/dev/null; then
+  echo "The edgerunner account cannot read Pi temperature; check vcgencmd access." >&2
+  exit 1
+fi
 install -d -m 750 -o edgerunner -g edgerunner /opt/edge-runner /opt/dataset
 cp -a "$SCRIPT_DIR/." /opt/edge-runner/
 install -m 644 "$CERT_SOURCE" /opt/edge-runner/cert.pem
