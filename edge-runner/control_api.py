@@ -5,12 +5,14 @@ import os
 import threading
 import time
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal, Optional
 from uuid import UUID
 
+import numpy as np
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from config import SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 from db import DatabaseError, PermanentRejectError, SupabaseWorkerClient, TransientNetworkError
@@ -58,7 +60,9 @@ def active_job(db: SupabaseWorkerClient, job_id: UUID, pi_id: str):
 
 
 class Completion(BaseModel):
-    accuracy: float = Field(ge=0, le=1)
+    model_config = ConfigDict(extra="forbid", strict=True)
+    predictions: list[int] = Field(min_length=1, max_length=5000)
+    dataset_sha256: str = Field(pattern=r"^[0-9a-fA-F]{64}$")
     latency_ms: float = Field(gt=0)
     peak_ram_mb: float = Field(gt=0)
     model_size_mb: float = Field(gt=0, le=50)
@@ -68,6 +72,23 @@ class Completion(BaseModel):
 class Failure(BaseModel):
     fail_status: Literal["failed_runtime", "failed_timeout", "failed_oom", "disqualified"]
     error_log: str = Field(min_length=1, max_length=2000)
+
+
+@lru_cache
+def ground_truth():
+    labels_path = os.environ.get("LABELS_FILE", "")
+    expected_hash = os.environ.get("DATASET_SHA256", "").lower()
+    if not labels_path or len(expected_hash) != 64:
+        raise HTTPException(503, "Private labels and dataset hash are not configured")
+    try:
+        labels = np.load(Path(labels_path), allow_pickle=False)
+    except (OSError, ValueError) as exc:
+        raise HTTPException(503, "Private labels are unavailable") from exc
+    if (labels.ndim != 1 or len(labels) == 0 or len(labels) > 5000
+            or not np.issubdtype(labels.dtype, np.integer)
+            or np.any(labels < 0) or np.any(labels > 7)):
+        raise HTTPException(503, "Private labels must contain class IDs 0-7")
+    return labels, expected_hash
 
 
 @app.get("/health")
@@ -120,11 +141,17 @@ def heartbeat(job_id: UUID, pi_id: str = Depends(authenticate), db: SupabaseWork
 @app.post("/v1/jobs/{job_id}/complete")
 def complete(job_id: UUID, result: Completion, pi_id: str = Depends(authenticate),
              db: SupabaseWorkerClient = Depends(database)):
-    values = [result.accuracy, result.latency_ms, result.peak_ram_mb, result.model_size_mb]
+    values = [result.latency_ms, result.peak_ram_mb, result.model_size_mb]
     if not all(math.isfinite(value) for value in values):
         raise HTTPException(422, "Metrics must be finite")
+    labels, expected_hash = ground_truth()
+    if result.dataset_sha256.lower() != expected_hash:
+        raise HTTPException(409, "Pi dataset hash does not match the event dataset")
+    if len(result.predictions) != len(labels) or any(prediction < 0 or prediction > 7 for prediction in result.predictions):
+        raise HTTPException(422, "Prediction count or class IDs are invalid")
+    accuracy = float(np.mean(np.asarray(result.predictions, dtype=np.int8) == labels))
     active_job(db, job_id, pi_id)
-    if not db_call(db.complete_job, str(job_id), pi_id, result.accuracy, result.latency_ms,
+    if not db_call(db.complete_job, str(job_id), pi_id, accuracy, result.latency_ms,
                    result.peak_ram_mb, result.model_size_mb, result.notes):
         raise HTTPException(409, "Job completion was rejected")
     return {"ok": True}

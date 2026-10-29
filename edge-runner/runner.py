@@ -118,24 +118,26 @@ def process_single_edge_job(
 
         # 6. Handle benchmark outcome
         if res.status == "ok":
-            accuracy = float(res.data.get("accuracy", 0.0))
+            predictions = res.data.get("predictions", [])
             latency_ms = float(res.data.get("latency_ms", 0.0))
             peak_ram_mb = res.peak_ram_mb
 
             logger.info(
                 f"[pi:{PI_ID}] [job:{job_id}] Benchmark completed: "
-                f"acc={accuracy:.4f}, lat={latency_ms:.2f}ms, ram={peak_ram_mb:.1f}MB"
+                f"samples={len(predictions)}, lat={latency_ms:.2f}ms, ram={peak_ram_mb:.1f}MB"
             )
 
             try:
                 db.complete_job(
                     job_id=job_id,
                     pi_id=PI_ID,
-                    accuracy=accuracy,
+                    accuracy=None,
                     latency_ms=latency_ms,
                     peak_ram_mb=peak_ram_mb,
                     model_size_mb=model_size_mb,
-                    notes=notes_str
+                    notes=notes_str,
+                    predictions=predictions,
+                    dataset_sha256=dataset_mgr.expected_hash(),
                 )
             except PermanentRejectError as e:
                 logger.warning(f"[pi:{PI_ID}] [job:{job_id}] Job completion rejected by DB: {e}")
@@ -143,11 +145,13 @@ def process_single_edge_job(
                 logger.warning(f"[pi:{PI_ID}] [job:{job_id}] Network error completing job. Spooling to local disk: {e}")
                 spooler.spool(job_id, "complete", {
                     "pi_id": PI_ID,
-                    "accuracy": accuracy,
+                    "accuracy": None,
                     "latency_ms": latency_ms,
                     "peak_ram_mb": peak_ram_mb,
                     "model_size_mb": model_size_mb,
-                    "notes": notes_str
+                    "notes": notes_str,
+                    "predictions": predictions,
+                    "dataset_sha256": dataset_mgr.expected_hash(),
                 })
             return True
 

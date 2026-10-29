@@ -159,13 +159,12 @@ def run_benchmark(model_path: str, dataset_file: str, warmup: int, mock: bool):
         # Load dataset
         with np.load(dataset_file) as npz:
             x_data = npz["x"]
-            y_data = npz["y"]
 
-        n_samples = len(y_data)
+        n_samples = len(x_data)
         if n_samples == 0 or x_data.shape != (n_samples, 128, 128, 1):
             raise ValueError("Dataset must contain nonempty grayscale 128x128 images")
-        if not np.issubdtype(y_data.dtype, np.integer) or np.any(y_data < 0) or np.any(y_data >= 8):
-            raise ValueError("Dataset labels must be integers from 0 to 7")
+        if not np.issubdtype(x_data.dtype, np.number) or not np.isfinite(x_data).all():
+            raise ValueError("Dataset images must contain finite numeric pixel values")
         if tuple(in_shape) != (1, 128, 128, 1):
             raise ValueError(f"Model input shape changed: {list(in_shape)}")
         if tuple(out_details["shape"]) != (1, 8):
@@ -186,7 +185,7 @@ def run_benchmark(model_path: str, dataset_file: str, warmup: int, mock: bool):
 
         # Timed inference per sample
         latencies_ms = []
-        correct = 0
+        predictions = []
 
         for i in range(n_samples):
             sample_inp = prepare_sample(x_data[i])
@@ -202,18 +201,15 @@ def run_benchmark(model_path: str, dataset_file: str, warmup: int, mock: bool):
             if out_scale > 0:
                 out_tensor = (out_tensor.astype(np.float32) - out_zero_point) * out_scale
 
-            pred_label = int(np.argmax(out_tensor))
-            if pred_label == int(y_data[i]):
-                correct += 1
+            predictions.append(int(np.argmax(out_tensor)))
 
-        accuracy = correct / float(n_samples) if n_samples > 0 else 0.0
         median_lat = float(np.median(latencies_ms)) if latencies_ms else 0.0
 
         print(json.dumps({
             "status": "ok",
-            "accuracy": accuracy,
             "latency_ms": median_lat,
-            "samples": n_samples
+            "samples": n_samples,
+            "predictions": predictions
         }))
         sys.exit(0)
 

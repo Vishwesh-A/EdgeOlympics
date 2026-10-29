@@ -1,6 +1,6 @@
 """Narrow, authenticated API client used by Raspberry Pi workers."""
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 from urllib.parse import quote
 
 import requests
@@ -51,11 +51,15 @@ class PiApiClient:
         self._check_pi(pi_id)
         return bool(self._request("POST", f"/v1/jobs/{quote(job_id)}/heartbeat").json()["ok"])
 
-    def complete_job(self, job_id: str, pi_id: str, accuracy: float, latency_ms: float,
-                     peak_ram_mb: float, model_size_mb: float, notes: Optional[str] = None) -> bool:
+    def complete_job(self, job_id: str, pi_id: str, accuracy: Optional[float], latency_ms: float,
+                     peak_ram_mb: float, model_size_mb: float, notes: Optional[str] = None,
+                     predictions: Optional[List[int]] = None, dataset_sha256: Optional[str] = None) -> bool:
         self._check_pi(pi_id)
+        if predictions is None or dataset_sha256 is None:
+            raise ValueError("Predictions and dataset hash are required")
         return bool(self._request("POST", f"/v1/jobs/{quote(job_id)}/complete", json={
-            "accuracy": accuracy, "latency_ms": latency_ms, "peak_ram_mb": peak_ram_mb,
+            "predictions": predictions, "dataset_sha256": dataset_sha256,
+            "latency_ms": latency_ms, "peak_ram_mb": peak_ram_mb,
             "model_size_mb": model_size_mb, "notes": notes,
         }).json()["ok"])
 

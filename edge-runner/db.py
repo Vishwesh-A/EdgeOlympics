@@ -86,12 +86,16 @@ class SupabaseWorkerClient:
         self,
         job_id: str,
         pi_id: str,
-        accuracy: float,
+        accuracy: Optional[float],
         latency_ms: float,
         peak_ram_mb: float,
         model_size_mb: float,
-        notes: Optional[str] = None
+        notes: Optional[str] = None,
+        predictions: Optional[List[int]] = None,
+        dataset_sha256: Optional[str] = None,
     ) -> bool:
+        if accuracy is None:
+            raise ValueError("Direct Supabase completion requires server-computed accuracy")
         return bool(self._rpc("complete_job", {
             "_id": job_id,
             "_pi_id": pi_id,

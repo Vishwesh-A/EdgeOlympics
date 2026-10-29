@@ -92,6 +92,22 @@ class TestEdgeOlympicsWorkers(unittest.TestCase):
             if os.path.exists(temp_path):
                 os.remove(temp_path)
 
+    def test_benchmark_returns_predictions_without_pi_labels(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            dataset_dir = Path(tmp_dir)
+            make_dummy_dataset.generate_dataset(dataset_dir, n_samples=5)
+            model = dataset_dir / "model.tflite"
+            model.write_bytes(b"MOCK_MODEL")
+            child_script = Path(__file__).parent.parent / "child_runner.py"
+            res = run_isolated([
+                sys.executable, str(child_script), "--mode", "benchmark",
+                "--model", str(model), "--dataset", str(dataset_dir / "data.npz"),
+                "--warmup", "1", "--mock",
+            ], timeout_s=5.0, mem_cap_mb=500.0)
+            self.assertEqual(res.status, "ok", res.error_log)
+            self.assertEqual(res.data["predictions"], [3] * 5)
+            self.assertNotIn("accuracy", res.data)
+
     def test_result_spooling_and_discard_rejected(self):
         """Spooled result is uploaded or discarded immediately if DB permanently rejects it."""
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -144,7 +160,7 @@ class TestEdgeOlympicsWorkers(unittest.TestCase):
                 f.write("0000000000000000000000000000000000000000000000000000000000000000  data.npz\n")
 
             with self.assertRaises(DatasetIntegrityError):
-                mgr.verify_integrity(force=True)
+                mgr.verify_integrity()
 
 if __name__ == "__main__":
     unittest.main()
