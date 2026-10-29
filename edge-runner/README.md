@@ -56,6 +56,12 @@ and a unique `PI_ID`. Copy `edge-runner/` to `/opt/edge-runner`; create a Python
 venv and install `requirements-pi.txt`. Copy Vast's `tls/cert.pem` to a readable
 path on the Pi. Put only the following into `/opt/edge-runner/.env` (mode 600):
 
+For the initial install, run `sudo bash edge-runner/setup_pi.sh pi-01 /path/to/cert.pem`
+from a copied checkout on the Pi. It prompts privately for that Pi's API token,
+installs the Python runtime and systemd service, and leaves the service stopped
+until the final dataset is in place. Repeat with the matching identity and token
+on each device.
+
 ```ini
 PI_ID=pi-01
 PI_API_URL=https://158.181.52.18:44298
