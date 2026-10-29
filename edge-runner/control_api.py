@@ -75,6 +75,11 @@ def health():
     return {"ok": True, "supabase_configured": bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)}
 
 
+@app.get("/v1/whoami")
+def whoami(pi_id: str = Depends(authenticate)):
+    return {"pi_id": pi_id}
+
+
 @app.post("/v1/claim")
 def claim(pi_id: str = Depends(authenticate), db: SupabaseWorkerClient = Depends(database)):
     global _last_requeue

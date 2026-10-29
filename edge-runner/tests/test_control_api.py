@@ -30,6 +30,7 @@ class ControlApiTests(unittest.TestCase):
     def test_authentication_and_claim_identity(self):
         self.assertEqual(self.client.post("/v1/claim").status_code, 401)
         self.assertEqual(self.client.post("/v1/claim", headers={"Authorization": "Bearer wrong"}).status_code, 401)
+        self.assertEqual(self.client.get("/v1/whoami", headers=self.auth).json(), {"pi_id": "pi-01"})
         self.db.claim_job.return_value = {"id": JOB_ID, "file_path": "team/model.tflite"}
         response = self.client.post("/v1/claim", headers=self.auth)
         self.assertEqual(response.status_code, 200)

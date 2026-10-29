@@ -67,6 +67,13 @@ EOF
 unset API_TOKEN
 chown -R edgerunner:edgerunner /opt/edge-runner /opt/dataset
 chmod 600 /opt/edge-runner/.env
+cd /opt/edge-runner
+runuser -u edgerunner -- /opt/edge-runner/venv/bin/python - <<'PY'
+from api_client import PiApiClient
+from config import PI_API_URL, PI_API_TOKEN, PI_ID
+client = PiApiClient(PI_API_URL, PI_API_TOKEN, PI_ID)
+print("Authenticated with control API as", client.whoami())
+PY
 install -m 644 /opt/edge-runner/edge-runner.service /etc/systemd/system/edge-runner.service
 systemctl daemon-reload
 systemctl enable edge-runner

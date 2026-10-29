@@ -41,6 +41,12 @@ class PiApiClient:
             raise DatabaseError("API token belongs to a different Pi identity")
         return payload.get("job")
 
+    def whoami(self) -> str:
+        pi_id = self._request("GET", "/v1/whoami").json().get("pi_id")
+        if pi_id != self.pi_id:
+            raise DatabaseError("API token belongs to a different Pi identity")
+        return pi_id
+
     def heartbeat(self, job_id: str, pi_id: str) -> bool:
         self._check_pi(pi_id)
         return bool(self._request("POST", f"/v1/jobs/{quote(job_id)}/heartbeat").json()["ok"])
