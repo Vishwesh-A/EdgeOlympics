@@ -6,7 +6,7 @@ import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { compareRank, isFailed, pickBest, usedSlots } from "@/lib/ranking";
+import { compareRank, isFailed, pickBest, scoreModel, usedSlots, type ScoringSettings } from "@/lib/ranking";
 import { useLiveRefresh, usePrefersReducedMotion } from "@/lib/live";
 import { CountUp, SlotPips, StateBox } from "./bits";
 import { StatusStepper, STATUS_LABEL } from "./StatusStepper";
@@ -57,21 +57,21 @@ export function fireConfetti(reduced: boolean) {
 }
 
 /** Watches team best + rank and celebrates improvements. */
-export function useCelebrations(subs: Submission[] | undefined, rank: number | null) {
+export function useCelebrations(subs: Submission[] | undefined, rank: number | null, settings?: ScoringSettings) {
   const reduced = usePrefersReducedMotion();
   const prevBest = useRef<string | null | undefined>(undefined);
   const prevRank = useRef<number | null | undefined>(undefined);
 
   useEffect(() => {
     if (!subs) return;
-    const best = pickBest(subs);
+    const best = pickBest(subs, settings);
     const id = best?.id ?? null;
     if (prevBest.current !== undefined && id && id !== prevBest.current) {
       toast.success("New personal best!", { description: "Your team set a new best score." });
       fireConfetti(reduced);
     }
     prevBest.current = id;
-  }, [subs, reduced]);
+  }, [subs, reduced, settings]);
 
   useEffect(() => {
     if (rank == null) return;
@@ -91,18 +91,20 @@ export function MySubmissionsPanel({
   teamId,
   teamName,
   rank,
+  settings,
 }: {
   teamId: string;
   teamName: string;
   rank: number | null;
+  settings?: ScoringSettings | undefined;
 }) {
   const { data, isLoading, error } = useTeamSubmissions(teamId);
-  useCelebrations(data, rank);
+  useCelebrations(data, rank, settings);
 
   if (isLoading) return <StateBox title="Loading your submissions…" />;
   if (error) return <StateBox tone="error" title="Couldn't load submissions" body={(error as Error).message} />;
   const subs = data ?? [];
-  const best = pickBest(subs);
+  const best = pickBest(subs, settings);
   const used = usedSlots(subs);
 
   return (
@@ -122,7 +124,7 @@ export function MySubmissionsPanel({
       </div>
 
       {subs.length === 0 ? (
-        <StateBox title="No submissions yet" body="Upload your first .tflite or .onnx model to get on the board." />
+        <StateBox title="No submissions yet" body="Upload your first .tflite model to get on the board." />
       ) : (
         <ul className="flex flex-col gap-4">
           {[...subs].sort((a, b) => (a.id === best?.id ? -1 : b.id === best?.id ? 1 : 0)).map((s) => {
@@ -167,7 +169,8 @@ export function MySubmissionsPanel({
                   <StatusStepper status={s.status} piId={s.pi_id} />
                 </div>
                 {s.status === "completed" && (
-                  <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+                    <Metric label="Score"><CountUp value={scoreModel(s, settings)} decimals={2} suffix=" pts" /></Metric>
                     <Metric label="Accuracy"><CountUp value={pct(s.accuracy)} decimals={2} suffix="%" /></Metric>
                     <Metric label="Latency"><CountUp value={s.latency_ms} decimals={1} suffix=" ms" /></Metric>
                     <Metric label="Peak RAM"><CountUp value={s.peak_ram_mb} decimals={1} suffix=" MB" /></Metric>

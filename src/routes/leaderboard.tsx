@@ -65,6 +65,9 @@ function Index() {
 
   const hidden = settings.data && !settings.data.leaderboard_visible;
   const frozen = settings.data?.leaderboard_frozen;
+  const weightTotal = settings.data
+    ? settings.data.weight_accuracy + settings.data.weight_latency + settings.data.weight_ram
+    : 1;
 
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 md:px-8 md:py-12">
@@ -75,6 +78,13 @@ function Index() {
         </div>
         <LiveIndicator connected={live.connected} lastUpdated={live.lastUpdated} />
       </section>
+
+      {settings.data && (
+        <p className="text-sm text-muted-foreground">
+          Score combines accuracy ({Math.round(settings.data.weight_accuracy / weightTotal * 100)}%), latency ({Math.round(settings.data.weight_latency / weightTotal * 100)}%), and peak RAM ({Math.round(settings.data.weight_ram / weightTotal * 100)}%).
+          {` Reference values: ${settings.data.latency_ref_ms} ms and ${settings.data.ram_ref_mb} MB.`}
+        </p>
+      )}
 
       <Ticker events={activity.data ?? []} />
 
@@ -122,7 +132,7 @@ function Index() {
               <Button asChild><Link to="/team">Set up team</Link></Button>
             </StateBox>
           ) : (
-            <MySubmissionsPanel teamId={team.data.id} teamName={team.data.name} rank={myRank} />
+              <MySubmissionsPanel teamId={team.data.id} teamName={team.data.name} rank={myRank} settings={settings.data ?? undefined} />
           )}
         </TabsContent>
       </Tabs>

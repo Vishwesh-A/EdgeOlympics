@@ -81,8 +81,8 @@ class TestEdgeOlympicsWorkers(unittest.TestCase):
                 str(child_script),
                 "--mode", "prelim",
                 "--model", temp_path,
-                "--expected-input", "1,32,32,3",
-                "--expected-output", "1,10",
+                "--expected-input", "1,128,128,1",
+                "--expected-output", "1,8",
                 "--mock"
             ]
             res = run_isolated(cmd, timeout_s=5.0, mem_cap_mb=500.0)

@@ -66,6 +66,15 @@ function Dashboard() {
     queryKey: ["settings"],
     queryFn: async () => (await supabase.from("settings").select("*").eq("id", 1).single()).data,
   });
+  const workers = useQuery({
+    queryKey: ["pi-workers"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("pi_workers").select("pi_id,last_seen").order("pi_id");
+      if (error) throw error;
+      return data ?? [];
+    },
+    refetchInterval: 10_000,
+  });
   const live = useLiveRefresh([{ table: "submissions" }, { table: "settings" }], () => {
     subs.refetch();
     settings.refetch();
@@ -73,16 +82,11 @@ function Dashboard() {
 
   const rows = subs.data ?? [];
   const pis = useMemo(() => {
-    const m = new Map<string, { last: string | null; job: Row | null }>();
-    for (const r of rows) {
-      if (!r.pi_id) continue;
-      const cur = m.get(r.pi_id) ?? { last: null, job: null };
-      if (r.last_heartbeat && (!cur.last || r.last_heartbeat > cur.last)) cur.last = r.last_heartbeat;
-      if (r.status === "running") cur.job = r;
-      m.set(r.pi_id, cur);
-    }
-    return [...m.entries()].sort();
-  }, [rows]);
+    return (workers.data ?? []).map((worker) => [
+      worker.pi_id,
+      { last: worker.last_seen, job: rows.find((r) => r.pi_id === worker.pi_id && r.status === "running") ?? null },
+    ] as const);
+  }, [rows, workers.data]);
   const filtered = rows.filter((r) => (status === "all" || r.status === status) && (pi === "all" || r.pi_id === pi));
 
   const act = async (id: string, action: string) => {
@@ -128,6 +132,17 @@ function Dashboard() {
               <div key={k} className="flex flex-col gap-2">
                 <Label htmlFor={k}>{k.replace("weight_", "Weight: ")}</Label>
                 <Input id={k} type="number" step="0.05" defaultValue={s[k]} onBlur={(e) => updateSettings({ [k]: Number(e.target.value) })} />
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-3 md:col-span-3">
+            {([
+              ["latency_ref_ms", "Latency reference (ms)"],
+              ["ram_ref_mb", "RAM reference (MB)"],
+            ] as const).map(([key, label]) => (
+              <div key={key} className="flex flex-col gap-2">
+                <Label htmlFor={key}>{label}</Label>
+                <Input id={key} type="number" min={0.001} step="0.01" defaultValue={s[key]} onBlur={(e) => updateSettings({ [key]: Number(e.target.value) })} />
               </div>
             ))}
           </div>

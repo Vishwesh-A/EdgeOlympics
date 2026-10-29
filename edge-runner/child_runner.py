@@ -7,8 +7,13 @@ from pathlib import Path
 import numpy as np
 
 def get_interpreter(model_path: str, mock: bool = False):
-    """Returns TFLite interpreter, falling back to mock interpreter if requested/unavailable."""
-    if not mock:
+    """Never produce benchmark scores from a mock runtime unless explicitly requested."""
+    if mock:
+        return MockInterpreter(model_path)
+    try:
+        from ai_edge_litert.interpreter import Interpreter
+        return Interpreter(model_path=model_path)
+    except ImportError:
         try:
             from tflite_runtime.interpreter import Interpreter
             return Interpreter(model_path=model_path)
@@ -16,11 +21,8 @@ def get_interpreter(model_path: str, mock: bool = False):
             try:
                 import tensorflow as tf
                 return tf.lite.Interpreter(model_path=model_path)
-            except ImportError:
-                pass
-
-    # Mock Interpreter for laptops / tests
-    return MockInterpreter(model_path)
+            except ImportError as exc:
+                raise RuntimeError("No TFLite runtime installed on this worker") from exc
 
 class MockInterpreter:
     def __init__(self, model_path: str):
@@ -32,10 +34,10 @@ class MockInterpreter:
                 raise ValueError("Model file is empty or too small")
             # If magic "BAD_SHAPE" or "OOM" or "HANG", simulate error
             if b"BAD_SHAPE" in header:
-                self.input_shape = [1, 64, 64, 3]
+                self.input_shape = [1, 64, 64, 1]
             else:
-                self.input_shape = [1, 32, 32, 3]
-            self.output_shape = [1, 10]
+                self.input_shape = [1, 128, 128, 1]
+            self.output_shape = [1, 8]
             self.dtype = np.float32
 
     def allocate_tensors(self):
@@ -68,7 +70,7 @@ class MockInterpreter:
 
     def get_tensor(self, index):
         # Deterministic dummy output
-        out = np.zeros((1, 10), dtype=np.float32)
+        out = np.zeros((1, 8), dtype=np.float32)
         out[0, 3] = 1.0  # Class 3
         return out
 
@@ -112,7 +114,10 @@ def run_prelim(model_path: str, expected_input, expected_output, mock: bool):
             sys.exit(1)
 
         actual_out_shape = tuple(outputs[0]["shape"].tolist())
-        if actual_out_shape != tuple(expected_output):
+        if len(actual_out_shape) != len(expected_output) or any(
+            expected != -1 and actual != expected
+            for actual, expected in zip(actual_out_shape, expected_output)
+        ) or actual_out_shape[-1] < 2:
             print(json.dumps({
                 "status": "error",
                 "message": f"Output shape mismatch: expected {list(expected_output)}, got {list(actual_out_shape)}"
@@ -157,6 +162,14 @@ def run_benchmark(model_path: str, dataset_file: str, warmup: int, mock: bool):
             y_data = npz["y"]
 
         n_samples = len(y_data)
+        if n_samples == 0 or x_data.shape != (n_samples, 128, 128, 1):
+            raise ValueError("Dataset must contain nonempty grayscale 128x128 images")
+        if not np.issubdtype(y_data.dtype, np.integer) or np.any(y_data < 0) or np.any(y_data >= 8):
+            raise ValueError("Dataset labels must be integers from 0 to 7")
+        if tuple(in_shape) != (1, 128, 128, 1):
+            raise ValueError(f"Model input shape changed: {list(in_shape)}")
+        if tuple(out_details["shape"]) != (1, 8):
+            raise ValueError("Model output must contain eight class scores")
 
         def prepare_sample(sample_x: np.ndarray) -> np.ndarray:
             inp = np.expand_dims(sample_x, axis=0)
@@ -215,8 +228,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["prelim", "benchmark"], required=True)
     parser.add_argument("--model", type=str, required=True)
-    parser.add_argument("--expected-input", type=str, default="1,32,32,3")
-    parser.add_argument("--expected-output", type=str, default="1,10")
+    parser.add_argument("--expected-input", type=str, default="1,128,128,1")
+    parser.add_argument("--expected-output", type=str, default="1,8")
     parser.add_argument("--dataset", type=str, default="")
     parser.add_argument("--warmup", type=int, default=5)
     parser.add_argument("--mock", action="store_true")

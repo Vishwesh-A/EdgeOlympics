@@ -1,14 +1,15 @@
 import { describe, it, expect } from "vitest";
-import { compareRank, pickBest, usedSlots, countsTowardLimit } from "./ranking";
+import { compareRank, pickBest, scoreModel, usedSlots, countsTowardLimit } from "./ranking";
 
 describe("ranking", () => {
-  it("ranks higher accuracy first", () => {
-    expect(compareRank({ accuracy: 0.9, latency_ms: 50, peak_ram_mb: 10 }, { accuracy: 0.8, latency_ms: 1, peak_ram_mb: 1 })).toBeLessThan(0);
+  it("combines accuracy, latency and RAM with the configured weights", () => {
+    expect(compareRank({ accuracy: 0.9, latency_ms: 50, peak_ram_mb: 10 }, { accuracy: 0.8, latency_ms: 1, peak_ram_mb: 1 })).toBeGreaterThan(0);
+    expect(scoreModel({ accuracy: 0.9, latency_ms: 100, peak_ram_mb: 256 })).toBeCloseTo(74);
   });
-  it("breaks accuracy ties by lower latency", () => {
-    expect(compareRank({ accuracy: 0.9, latency_ms: 20, peak_ram_mb: 99 }, { accuracy: 0.9, latency_ms: 30, peak_ram_mb: 1 })).toBeLessThan(0);
+  it("rewards lower latency at equal accuracy", () => {
+    expect(compareRank({ accuracy: 0.9, latency_ms: 20, peak_ram_mb: 99 }, { accuracy: 0.9, latency_ms: 30, peak_ram_mb: 99 })).toBeLessThan(0);
   });
-  it("breaks latency ties by lower peak RAM", () => {
+  it("rewards lower RAM at equal accuracy and latency", () => {
     expect(compareRank({ accuracy: 0.9, latency_ms: 20, peak_ram_mb: 5 }, { accuracy: 0.9, latency_ms: 20, peak_ram_mb: 8 })).toBeLessThan(0);
   });
   it("best ignores non-completed submissions", () => {
@@ -17,6 +18,9 @@ describe("ranking", () => {
       { id: "b", status: "completed", accuracy: 0.7, latency_ms: 1, peak_ram_mb: 1 },
     ]);
     expect(best?.id).toBe("b");
+  });
+  it("has no accuracy cutoff", () => {
+    expect(scoreModel({ accuracy: 0.1, latency_ms: 100, peak_ram_mb: 256 })).toBeGreaterThan(0);
   });
 });
 

@@ -59,12 +59,20 @@ export type Database = {
         }
         Relationships: []
       }
+      pi_workers: {
+        Row: { pi_id: string; last_seen: string }
+        Insert: { pi_id: string; last_seen?: string }
+        Update: { pi_id?: string; last_seen?: string }
+        Relationships: []
+      }
       settings: {
         Row: {
           frozen_at: string | null
           id: number
           leaderboard_frozen: boolean
           leaderboard_visible: boolean
+          latency_ref_ms: number
+          ram_ref_mb: number
           submission_deadline: string | null
           updated_at: string
           weight_accuracy: number
@@ -76,6 +84,8 @@ export type Database = {
           id?: number
           leaderboard_frozen?: boolean
           leaderboard_visible?: boolean
+          latency_ref_ms?: number
+          ram_ref_mb?: number
           submission_deadline?: string | null
           updated_at?: string
           weight_accuracy?: number
@@ -87,6 +97,8 @@ export type Database = {
           id?: number
           leaderboard_frozen?: boolean
           leaderboard_visible?: boolean
+          latency_ref_ms?: number
+          ram_ref_mb?: number
           submission_deadline?: string | null
           updated_at?: string
           weight_accuracy?: number
@@ -256,6 +268,7 @@ export type Database = {
           latency_ms: number
           model_size_mb: number
           peak_ram_mb: number
+          score: number
           team_id: string
           team_name: string
         }[]
@@ -270,6 +283,7 @@ export type Database = {
       join_team: { Args: { _code: string }; Returns: string }
       my_team_id: { Args: never; Returns: string }
       team_slots: { Args: never; Returns: Json }
+      worker_seen: { Args: { _pi_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"

@@ -84,15 +84,13 @@ def process_single_edge_job(
     heartbeat_worker = HeartbeatThread(db, job_id, PI_ID)
 
     try:
+        heartbeat_worker.start()
         # 3. Download model
         logger.info(f"[pi:{PI_ID}] [job:{job_id}] Downloading model: {file_path}")
-        db.download_model(file_path, local_model)
+        db.download_model(file_path, local_model, job_id=job_id)
         model_size_mb = local_model.stat().st_size / (1024.0 * 1024.0)
 
-        # 4. Start heartbeat thread
-        heartbeat_worker.start()
-
-        # 5. Launch isolated child benchmark process
+        # 4. Launch isolated child benchmark process
         child_script = Path(__file__).parent / "child_runner.py"
         cmd = [
             sys.executable,
@@ -170,6 +168,12 @@ def process_single_edge_job(
                     "error_log": err_msg
                 })
             return False
+
+    except TransientNetworkError as e:
+        # A network outage is not a participant failure. The stale-job lease
+        # will requeue the assignment if this worker cannot finish it.
+        logger.warning(f"[pi:{PI_ID}] [job:{job_id}] Temporary control API error: {e}")
+        return False
 
     except Exception as e:
         logger.error(f"[pi:{PI_ID}] [job:{job_id}] Unexpected runner error: {e}")

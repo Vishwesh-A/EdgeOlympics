@@ -1,8 +1,9 @@
 import sys
 import signal
 import argparse
-from config import SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, PI_ID, WORKER_ID
+from config import SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, PI_API_URL, PI_API_TOKEN, PI_ID, WORKER_ID
 from db import SupabaseWorkerClient
+from api_client import PiApiClient
 from prelim import run_prelim_loop
 from runner import run_edge_runner_loop
 from logger import get_logger
@@ -28,11 +29,16 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-        logger.error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment.")
+    if args.prelim:
+        if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+            logger.error("Prelim worker requires SUPABASE_URL and SUPABASE_SECRET_KEY (or legacy service-role key).")
+            sys.exit(1)
+        db = SupabaseWorkerClient()
+    elif PI_API_URL and PI_API_TOKEN:
+        db = PiApiClient(PI_API_URL, PI_API_TOKEN, PI_ID)
+    else:
+        logger.error("Pi worker requires PI_API_URL and PI_API_TOKEN.")
         sys.exit(1)
-
-    db = SupabaseWorkerClient()
 
     if args.prelim:
         logger.info(f"Starting Prelim Checker (worker_id={WORKER_ID})...")

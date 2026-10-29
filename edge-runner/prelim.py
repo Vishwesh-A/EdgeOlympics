@@ -82,6 +82,11 @@ def process_single_prelim_job(job: dict, db: SupabaseWorkerClient, mock: bool = 
         db.prelim_pass(job_id, WORKER_ID)
         return True
 
+    except TransientNetworkError as e:
+        # Leave the pending job and model intact; the claim lease will expire.
+        logger.warning(f"[job:{job_id}] Temporary Supabase error; will retry after lease expiry: {e}")
+        return False
+
     except Exception as e:
         logger.error(f"[job:{job_id}] Unexpected error in prelim checker: {e}")
         try:

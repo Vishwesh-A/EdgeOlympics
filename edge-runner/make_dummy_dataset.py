@@ -8,8 +8,8 @@ def generate_dataset(output_dir: Path, n_samples: int = 100):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     np.random.seed(42)
-    x = np.random.uniform(0.0, 1.0, size=(n_samples, 32, 32, 3)).astype(np.float32)
-    y = np.random.randint(0, 10, size=(n_samples,)).astype(np.int64)
+    x = np.random.uniform(0.0, 1.0, size=(n_samples, 128, 128, 1)).astype(np.float32)
+    y = np.random.randint(0, 8, size=(n_samples,)).astype(np.int64)
 
     data_file = output_dir / "data.npz"
     np.savez_compressed(data_file, x=x, y=y)

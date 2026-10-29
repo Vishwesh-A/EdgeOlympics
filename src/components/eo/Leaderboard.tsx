@@ -8,6 +8,7 @@ import { usePrefersReducedMotion } from "@/lib/live";
 export type LbRow = {
   team_id: string;
   team_name: string;
+  score: number;
   accuracy: number | null;
   latency_ms: number | null;
   peak_ram_mb: number | null;
@@ -76,8 +77,9 @@ export function Podium({ rows, myTeamId }: { rows: LbRow[]; myTeamId?: string | 
               {r.team_name}
             </p>
             <p className={cn("num text-lg md:text-3xl font-bold", medalText[m])}>
-              <CountUp value={pct(r.accuracy)} decimals={2} suffix="%" />
+              <CountUp value={r.score} decimals={2} suffix=" pts" />
             </p>
+            <p className="num text-xs text-muted-foreground"><CountUp value={pct(r.accuracy)} decimals={2} suffix="% accuracy" /></p>
             <div
               className={cn(
                 "flex w-full items-start justify-center rounded-t-2xl border pt-3",
@@ -105,7 +107,7 @@ export function LeaderboardTable({ rows, myTeamId }: { rows: LbRow[]; myTeamId?:
   useEffect(() => {
     const changed = new Set<string>();
     rows.forEach((r, i) => {
-      const sig = `${i}|${r.accuracy}|${r.latency_ms}|${r.peak_ram_mb}`;
+      const sig = `${i}|${r.score}|${r.accuracy}|${r.latency_ms}|${r.peak_ram_mb}`;
       const old = prev.current.get(r.team_id);
       if (prev.current.size && old !== sig) changed.add(r.team_id);
       prev.current.set(r.team_id, sig);
@@ -120,11 +122,12 @@ export function LeaderboardTable({ rows, myTeamId }: { rows: LbRow[]; myTeamId?:
 
   return (
     <div className="glass overflow-x-auto rounded-2xl">
-      <table className="w-full min-w-[640px] text-left">
+      <table className="w-full min-w-[740px] text-left">
         <thead className="text-xs uppercase tracking-wider text-muted-foreground">
           <tr className="border-b">
             <th className="px-5 py-4 w-20">Rank</th>
             <th className="px-5 py-4">Team</th>
+            <th className="px-5 py-4 text-right">Score</th>
             <th className="px-5 py-4 text-right">Accuracy</th>
             <th className="px-5 py-4 text-right">Latency</th>
             <th className="px-5 py-4 text-right">Peak RAM</th>
@@ -165,6 +168,7 @@ export function LeaderboardTable({ rows, myTeamId }: { rows: LbRow[]; myTeamId?:
                       <Badges id={r.team_id} b={badges} />
                     </div>
                   </td>
+                  <td className="px-5 py-4 text-right font-bold"><CountUp value={r.score} decimals={2} /></td>
                   <td className="px-5 py-4 text-right font-semibold">
                     <CountUp value={pct(r.accuracy)} decimals={2} suffix="%" />
                   </td>

@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/team")({
 });
 
 const MAX_BYTES = 50 * 1024 * 1024;
-const ALLOWED = ["tflite", "onnx"];
+const ALLOWED = ["tflite"];
 
 function TeamPage() {
   const { user } = useSession();
@@ -153,7 +153,7 @@ function Uploader({ teamId, used, closed, deadline }: { teamId: string; used: nu
   const pick = (f: File | undefined) => {
     if (!f) return;
     const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
-    if (!ALLOWED.includes(ext)) return void toast.error("Only .tflite or .onnx files are allowed.");
+    if (!ALLOWED.includes(ext)) return void toast.error("Only .tflite files are allowed.");
     if (f.size > MAX_BYTES) return void toast.error("File is larger than 50 MB.");
     setFile(f);
   };
@@ -214,10 +214,10 @@ function Uploader({ teamId, used, closed, deadline }: { teamId: string; used: nu
             <FileUp className="h-8 w-8 text-primary" />
             <span className="font-medium">{file ? file.name : "Drop your model here or click to browse"}</span>
             <span className="text-sm text-muted-foreground">
-              {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : ".tflite or .onnx only · max 50 MB · no scripts"}
+              {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : ".tflite only · max 50 MB · no scripts"}
             </span>
           </button>
-          <input ref={input} type="file" accept=".tflite,.onnx" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+          <input ref={input} type="file" accept=".tflite" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
           {progress != null && <Progress value={progress} />}
           <Button size="lg" disabled={!file || progress != null} onClick={upload}>
             {progress != null ? "Uploading…" : "Submit model"}
