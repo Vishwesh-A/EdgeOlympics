@@ -9,6 +9,8 @@ class ThermalManager:
         self.mock = mock
         self.temp_limit_c = temp_limit_c
         self.has_vcgencmd = shutil.which("vcgencmd") is not None
+        if not mock and not self.has_vcgencmd:
+            raise RuntimeError("vcgencmd is required for real Raspberry Pi benchmarks")
 
     def read_metrics(self) -> Tuple[float, int]:
         """Returns (temperature_c, throttled_hex_int)."""

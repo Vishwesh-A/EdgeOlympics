@@ -84,15 +84,13 @@ def process_single_edge_job(
     heartbeat_worker = HeartbeatThread(db, job_id, PI_ID)
 
     try:
+        heartbeat_worker.start()
         # 3. Download model
         logger.info(f"[pi:{PI_ID}] [job:{job_id}] Downloading model: {file_path}")
-        db.download_model(file_path, local_model)
+        db.download_model(file_path, local_model, job_id=job_id)
         model_size_mb = local_model.stat().st_size / (1024.0 * 1024.0)
 
-        # 4. Start heartbeat thread
-        heartbeat_worker.start()
-
-        # 5. Launch isolated child benchmark process
+        # 4. Launch isolated child benchmark process
         child_script = Path(__file__).parent / "child_runner.py"
         cmd = [
             sys.executable,
@@ -120,24 +118,26 @@ def process_single_edge_job(
 
         # 6. Handle benchmark outcome
         if res.status == "ok":
-            accuracy = float(res.data.get("accuracy", 0.0))
+            predictions = res.data.get("predictions", [])
             latency_ms = float(res.data.get("latency_ms", 0.0))
             peak_ram_mb = res.peak_ram_mb
 
             logger.info(
                 f"[pi:{PI_ID}] [job:{job_id}] Benchmark completed: "
-                f"acc={accuracy:.4f}, lat={latency_ms:.2f}ms, ram={peak_ram_mb:.1f}MB"
+                f"samples={len(predictions)}, lat={latency_ms:.2f}ms, ram={peak_ram_mb:.1f}MB"
             )
 
             try:
                 db.complete_job(
                     job_id=job_id,
                     pi_id=PI_ID,
-                    accuracy=accuracy,
+                    accuracy=None,
                     latency_ms=latency_ms,
                     peak_ram_mb=peak_ram_mb,
                     model_size_mb=model_size_mb,
-                    notes=notes_str
+                    notes=notes_str,
+                    predictions=predictions,
+                    dataset_sha256=dataset_mgr.expected_hash(),
                 )
             except PermanentRejectError as e:
                 logger.warning(f"[pi:{PI_ID}] [job:{job_id}] Job completion rejected by DB: {e}")
@@ -145,11 +145,13 @@ def process_single_edge_job(
                 logger.warning(f"[pi:{PI_ID}] [job:{job_id}] Network error completing job. Spooling to local disk: {e}")
                 spooler.spool(job_id, "complete", {
                     "pi_id": PI_ID,
-                    "accuracy": accuracy,
+                    "accuracy": None,
                     "latency_ms": latency_ms,
                     "peak_ram_mb": peak_ram_mb,
                     "model_size_mb": model_size_mb,
-                    "notes": notes_str
+                    "notes": notes_str,
+                    "predictions": predictions,
+                    "dataset_sha256": dataset_mgr.expected_hash(),
                 })
             return True
 
@@ -170,6 +172,12 @@ def process_single_edge_job(
                     "error_log": err_msg
                 })
             return False
+
+    except TransientNetworkError as e:
+        # A network outage is not a participant failure. The stale-job lease
+        # will requeue the assignment if this worker cannot finish it.
+        logger.warning(f"[pi:{PI_ID}] [job:{job_id}] Temporary control API error: {e}")
+        return False
 
     except Exception as e:
         logger.error(f"[pi:{PI_ID}] [job:{job_id}] Unexpected runner error: {e}")
@@ -232,7 +240,14 @@ def run_edge_runner_loop(db: SupabaseWorkerClient, mock: bool = False, run_once:
             if stale_count > 0:
                 logger.info(f"Requeued/failed {stale_count} stale jobs.")
 
-            # 3. Claim job
+            # 3. Cool before claiming, so overheating never occupies a job lease.
+            _, _, cooled = thermal_mgr.wait_for_cooldown(max_wait_seconds=60)
+            if not cooled:
+                logger.warning("Pi remains hot or throttled; waiting before claiming another job.")
+                time.sleep(POLL_INTERVAL_S)
+                continue
+
+            # 4. Claim job
             job = db.claim_job(PI_ID)
             if job:
                 backoff = 1.0

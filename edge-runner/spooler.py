@@ -59,7 +59,9 @@ class ResultSpooler:
                         latency_ms=payload["latency_ms"],
                         peak_ram_mb=payload["peak_ram_mb"],
                         model_size_mb=payload["model_size_mb"],
-                        notes=payload.get("notes")
+                        notes=payload.get("notes"),
+                        predictions=payload.get("predictions"),
+                        dataset_sha256=payload.get("dataset_sha256"),
                     )
                 elif kind == "fail":
                     db.fail_job(

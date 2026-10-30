@@ -313,17 +313,17 @@ function SuspenseSections({ reduced }: { reduced: boolean }) {
         />
         <SuspenseBeat
           eyebrow="Real Hardware Testing"
-          headline="FOUR METRICS. NO MERCY."
-          body="We run your final build directly on our physical Raspberry Pi rigs. You are judged on four brutal metrics: inference speed, RAM usage, chip temperature, and accuracy. The silicon doesn't lie."
-          aside="4 Metrics"
+          headline="REAL HARDWARE. REAL LIMITS."
+          body="We run your model directly on physical Raspberry Pi rigs. Accuracy, inference latency, and peak RAM determine the score; thermal checks keep the runs comparable."
+          aside="Pi 4B Testing"
           align="right"
           reduced={reduced}
         />
         <SuspenseBeat
           eyebrow="The Catch"
-          headline="BELOW 75%? SCORE HITS ZERO."
-          body="Drop below the 75% accuracy cutoff or crash the memory, and your entire score resets to zero. No cloud servers. No infinite memory. Just your code, a 2GB board, and a strict thermal limit."
-          aside="75% Cutoff"
+          headline="EVERY MILLISECOND COUNTS."
+          body="A weighted score rewards accuracy, speed, and memory efficiency. The model runs on constrained hardware under the same benchmark limits as every other entry."
+          aside="Weighted Score"
           align="left"
           reduced={reduced}
         />
@@ -445,9 +445,9 @@ function HowItWorks({ reduced }: { reduced: boolean }) {
           className="mt-10 grid grid-cols-3 gap-4"
         >
           {[
-            { value: "2 GB", label: "RAM Limit" },
-            { value: "75%", label: "Min. Accuracy" },
-            { value: "4", label: "Judged Metrics" },
+            { value: "4", label: "Pi 4B Workers" },
+            { value: "8", label: "Output Classes" },
+            { value: "3", label: "Scored Metrics" },
           ].map((s) => (
             <div
               key={s.label}
@@ -929,8 +929,10 @@ function LandingPage() {
               mouseGlow={0.6}
               pageLoadAnimation
               clickEffect="glitch"
+              variation={0}
               vignette={0.3}
               dpr={1}
+              style={{}}
             />
           </Suspense>
         )}
