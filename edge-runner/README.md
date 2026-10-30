@@ -59,7 +59,10 @@ Pis; distribute only `data.npz` and `manifest.sha256` to them.
 ## Raspberry Pi OS (64-bit) setup, repeated for pi-01 through pi-04
 
 Confirm `uname -m` reports `aarch64` and give each Pi reliable power, internet,
-and a unique `PI_ID`. Confirm `vcgencmd measure_temp` works; the worker refuses
+and a unique `PI_ID`. Both `arm64` and the Raspberry Pi OS `armhf` userspace are
+supported. On `armhf`, setup builds a private Python 3.11 runtime and installs
+the compatible TensorFlow Lite 2.14 runtime; the first installation therefore
+takes several minutes. Confirm `vcgencmd measure_temp` works; the worker refuses
 real benchmarks when thermal telemetry is unavailable. Copy `edge-runner/`
 and Vast's `tls/cert.pem` to the Pi.
 
