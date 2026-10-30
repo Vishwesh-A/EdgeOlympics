@@ -53,7 +53,7 @@ PYTHON_BIN=python3
 REQUIREMENTS_FILE="$SCRIPT_DIR/requirements-pi.txt"
 if [[ "$(dpkg --print-architecture)" == "armhf" ]]; then
   apt-get install -y build-essential curl libssl-dev zlib1g-dev libbz2-dev \
-    libreadline-dev libsqlite3-dev libffi-dev liblzma-dev uuid-dev
+    libreadline-dev libsqlite3-dev libffi-dev liblzma-dev uuid-dev libopenblas0
   PYTHON_BIN=/opt/python3.11/bin/python3.11
   REQUIREMENTS_FILE="$SCRIPT_DIR/requirements-pi-armhf.txt"
   if [[ ! -x "$PYTHON_BIN" ]]; then
