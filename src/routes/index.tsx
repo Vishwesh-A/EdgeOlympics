@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")(
         {
           name: "description",
           content:
-            "An Edge AI optimization challenge by ECE Society, NIT Warangal. Build, optimize, and deploy a model on Raspberry Pi 4. Judged on speed, RAM, temperature, and accuracy.",
+            "An Edge AI optimization challenge by ECE Society, NIT Warangal. Submit a TFLite model for Raspberry Pi 4 benchmarking on accuracy, latency, and RAM.",
         },
         { property: "og:title", content: "Edge Olympics — BIG AI. TINY SILICON." },
         {
@@ -114,6 +114,7 @@ function LandingNav({
           <span className="text-sm font-semibold uppercase tracking-widest">Edge Olympics</span>
         </Link>
         <div className="flex items-center gap-5">
+          <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-white/75 transition-colors hover:text-white">Participant guide</a>
           <Link
             to="/leaderboard"
             className="text-sm text-white/60 transition-colors hover:text-white"
@@ -209,9 +210,9 @@ function HeroSection({ reduced }: { reduced: boolean }) {
         >
           {[
             { icon: "📅", text: "30 October 2026" },
-            { icon: "⏰", text: "9 AM – 4 PM" },
+            { icon: "⏰", text: "Submit by 6 PM IST" },
             { icon: "📍", text: "Room B316" },
-            { icon: "👥", text: "Teams of 2–4" },
+            { icon: "👥", text: "Team submissions" },
           ].map((item) => (
             <span
               key={item.text}
@@ -222,6 +223,7 @@ function HeroSection({ reduced }: { reduced: boolean }) {
             </span>
           ))}
         </motion.div>
+        <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-85">Read the participant guide (PDF)</a>
       </div>
 
       {/* Scroll indicator */}
@@ -339,25 +341,25 @@ const STEPS = [
     num: "01",
     icon: "🧠",
     title: "Build Your Model",
-    desc: "Use the provided dataset to train your AI model from scratch. Architecture choices are yours.",
+    desc: "Use the challenge training data and class order. Build an eight-class grayscale classifier with a [1,128,128,1] input.",
   },
   {
     num: "02",
     icon: "⚙️",
     title: "Optimize Ruthlessly",
-    desc: "Apply pruning, quantization, and compression. Strip every byte you can without killing accuracy.",
+    desc: "Export one self-contained .tflite file under 50 MiB. Check its input and output tensors with a CPU interpreter.",
   },
   {
     num: "03",
     icon: "🖥️",
     title: "We Run It Live",
-    desc: "Your final build executes on our physical Raspberry Pi 4 rigs. No simulators. No shortcuts.",
+    desc: "Sign in, create or join a team, then upload from My team. You have three slots; failed runs free a slot.",
   },
   {
     num: "04",
     icon: "🏅",
-    title: "Live Leaderboard",
-    desc: "Ranked in real time on all four metrics. Watch your position shift as other teams submit.",
+    title: "Track Your Score",
+    desc: "Watch validation and Pi testing progress. The best completed run counts, using accuracy, latency, and RAM.",
   },
 ];
 
@@ -434,6 +436,11 @@ function HowItWorks({ reduced }: { reduced: boolean }) {
           {STEPS.map((step, i) => (
             <StepCard key={step.num} step={step} index={i} reduced={reduced} />
           ))}
+        </div>
+
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4 rounded-2xl border border-primary/30 bg-black/70 p-6 text-center text-white">
+          <p className="max-w-xl text-sm leading-relaxed text-white/75">New here? Follow the four steps above, then check the exact model contract, scoring, and submission rules before uploading.</p>
+          <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground">Open participant guide (PDF)</a>
         </div>
 
         {/* Stats */}
@@ -961,6 +968,7 @@ function LandingPage() {
             </p>
             <p className="text-xs text-white/20">ECE Society, NIT Warangal</p>
             <div className="mt-1 flex gap-6 text-xs text-white/20">
+              <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white/45">Participant guide</a>
               <Link to="/leaderboard" className="transition-colors hover:text-white/45">
                 Leaderboard
               </Link>
