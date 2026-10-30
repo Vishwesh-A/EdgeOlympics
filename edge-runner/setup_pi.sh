@@ -84,8 +84,12 @@ fi
 install -d -m 750 -o edgerunner -g edgerunner /opt/edge-runner /opt/dataset
 cp -a "$SCRIPT_DIR/." /opt/edge-runner/
 install -m 644 "$CERT_SOURCE" /opt/edge-runner/cert.pem
-"$PYTHON_BIN" -m venv --clear /opt/edge-runner/venv
-/opt/edge-runner/venv/bin/pip install -r "$REQUIREMENTS_FILE"
+if ! /opt/edge-runner/venv/bin/python -c \
+    'import importlib.util as u; assert u.find_spec("tflite_runtime") or u.find_spec("ai_edge_litert")' \
+    >/dev/null 2>&1; then
+  "$PYTHON_BIN" -m venv --clear /opt/edge-runner/venv
+  /opt/edge-runner/venv/bin/pip install -r "$REQUIREMENTS_FILE"
+fi
 
 umask 077
 cat > /opt/edge-runner/.env <<EOF
