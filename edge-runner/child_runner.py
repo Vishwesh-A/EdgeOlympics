@@ -165,6 +165,8 @@ def run_benchmark(model_path: str, dataset_file: str, warmup: int, mock: bool):
             raise ValueError("Dataset must contain nonempty grayscale 128x128 images")
         if not np.issubdtype(x_data.dtype, np.number) or not np.isfinite(x_data).all():
             raise ValueError("Dataset images must contain finite numeric pixel values")
+        if np.any(x_data < 0) or np.any(x_data > 1):
+            raise ValueError("Dataset pixels must be normalized to the 0-1 range")
         if tuple(in_shape) != (1, 128, 128, 1):
             raise ValueError(f"Model input shape changed: {list(in_shape)}")
         if tuple(out_details["shape"]) != (1, 8):

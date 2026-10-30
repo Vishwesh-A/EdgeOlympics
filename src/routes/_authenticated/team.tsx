@@ -214,7 +214,9 @@ function Uploader({ teamId, used, closed, deadline }: { teamId: string; used: nu
             <FileUp className="h-8 w-8 text-primary" />
             <span className="font-medium">{file ? file.name : "Drop your model here or click to browse"}</span>
             <span className="text-sm text-muted-foreground">
-              {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : ".tflite only · max 50 MB · no scripts"}
+              {file
+                ? `${(file.size / 1024 / 1024).toFixed(2)} MB`
+                : ".tflite · [1,128,128,1] grayscale 0–1 · 8 classes · max 50 MB"}
             </span>
           </button>
           <input ref={input} type="file" accept=".tflite" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />

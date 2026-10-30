@@ -19,9 +19,11 @@ service-role key. The Pis require outbound HTTPS; inbound SSH is only for setup.
   accuracy cutoff. Calibrate L and R before the event and then
   publish/freeze the settings.
 
-**Before participant release:** specify class order, image resizing/cropping,
-pixel normalization, and whether float32/int8/uint8 models are all accepted.
-Keep test images and labels private. Put the same `data.npz` (`x` array only)
+Pixel values are grayscale float32 values normalized to `[0,1]`. Models may use
+float32, int8, or uint8 inputs; quantized inputs are produced using the scale
+and zero point embedded in the TFLite input tensor. Output indices are class
+IDs 0–7 in the training dataset's class order. Keep test images and labels
+private. Put the same `data.npz` (`x` array only)
 on every Pi with a matching `manifest.sha256`; `x` must be `[N,128,128,1]`.
 Keep the matching `labels.npy` on Vast only; labels must contain class IDs 0–7.
 Each Pi returns one prediction per image, and Vast computes accuracy against
