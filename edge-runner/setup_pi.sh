@@ -84,7 +84,7 @@ fi
 install -d -m 750 -o edgerunner -g edgerunner /opt/edge-runner /opt/dataset
 cp -a "$SCRIPT_DIR/." /opt/edge-runner/
 install -m 644 "$CERT_SOURCE" /opt/edge-runner/cert.pem
-"$PYTHON_BIN" -m venv /opt/edge-runner/venv
+"$PYTHON_BIN" -m venv --clear /opt/edge-runner/venv
 /opt/edge-runner/venv/bin/pip install -r "$REQUIREMENTS_FILE"
 
 umask 077
