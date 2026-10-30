@@ -114,7 +114,7 @@ function LandingNav({
           <span className="text-sm font-semibold uppercase tracking-widest">Edge Olympics</span>
         </Link>
         <div className="flex items-center gap-5">
-          <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-white/75 transition-colors hover:text-white">Participant guide</a>
+          <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-white/75 transition-colors hover:text-white">Rulebook</a>
           <Link
             to="/leaderboard"
             className="text-sm text-white/60 transition-colors hover:text-white"
@@ -223,7 +223,7 @@ function HeroSection({ reduced }: { reduced: boolean }) {
             </span>
           ))}
         </motion.div>
-        <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-85">Read the participant guide (PDF)</a>
+        <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-85">Read the event rulebook (PDF)</a>
       </div>
 
       {/* Scroll indicator */}
@@ -439,8 +439,8 @@ function HowItWorks({ reduced }: { reduced: boolean }) {
         </div>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4 rounded-2xl border border-primary/30 bg-black/70 p-6 text-center text-white">
-          <p className="max-w-xl text-sm leading-relaxed text-white/75">New here? Follow the four steps above, then check the exact model contract, scoring, and submission rules before uploading.</p>
-          <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground">Open participant guide (PDF)</a>
+          <p className="max-w-xl text-sm leading-relaxed text-white/75">New here? Follow the four steps above, then read the event rulebook before uploading.</p>
+          <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground">Open event rulebook (PDF)</a>
         </div>
 
         {/* Stats */}
@@ -968,7 +968,7 @@ function LandingPage() {
             </p>
             <p className="text-xs text-white/20">ECE Society, NIT Warangal</p>
             <div className="mt-1 flex gap-6 text-xs text-white/20">
-              <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white/45">Participant guide</a>
+              <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white/45">Rulebook</a>
               <Link to="/leaderboard" className="transition-colors hover:text-white/45">
                 Leaderboard
               </Link>

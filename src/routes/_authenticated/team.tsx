@@ -122,7 +122,7 @@ function TeamHome({ team }: { team: Team }) {
       </div>
 
       <Uploader teamId={team.id} used={used} closed={closed} deadline={deadline} />
-      <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary underline underline-offset-4">Check the participant guide before submitting (PDF)</a>
+      <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary underline underline-offset-4">Read the event rulebook (PDF)</a>
 
       <div className="glass rounded-2xl p-6">
         <p className="mb-3 font-semibold">Members</p>

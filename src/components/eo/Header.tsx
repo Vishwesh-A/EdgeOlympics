@@ -31,7 +31,7 @@ export function Header() {
           <span className="text-lg">Edge Olympics</span>
         </Link>
         <nav className="flex items-center gap-1">
-          <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className={linkCls}>Guide</a>
+          <a href="/edge-olympics-participant-guide.pdf" target="_blank" rel="noopener noreferrer" className={linkCls}>Rulebook</a>
           <Link to="/leaderboard" className={linkCls} activeProps={active}>
             Leaderboard
           </Link>
